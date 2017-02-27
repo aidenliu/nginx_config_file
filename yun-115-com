@@ -1,0 +1,86 @@
+server {
+        listen 80;
+        server_name yun.115rc.com;
+        add_header  Powered-By-115 DEV_WEB_web17;
+        root      /www/web/api-yun-115-com/api.yun.115.com;
+        set $ec_115 "off";
+        set $new_request_uri $request_uri;
+        location ~ \.php$ {
+                try_files $uri /404.html;
+		        fastcgi_pass unix:/var/run/php/php5.6-fpm.sock;
+                fastcgi_index  index.php;
+                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+                fastcgi_max_temp_file_size 0;
+                include /etc/nginx/fastcgi_params;
+                fastcgi_param  REQUEST_URI $new_request_uri;
+                if ($ec_115 = "on"){
+                    #ec115 on;
+                    #ec115_arg_name $arg_k_ec;
+                    #more_set_headers 'Content-Type: application/binary';
+                }
+
+        }
+        error_page  404  /404.html;
+        error_page  403  /403.html;
+        error_page  500 502 503 504  /50x.html;
+        location /nginx_status {
+                allow 10.10.0.0/22;
+                allow 10.21.0.0/22;
+                allow 192.168.0.0/24;
+                allow 192.168.1.0/24;
+                allow 127.0.0.1;
+                deny all;
+                stub_status on;
+                access_log off;
+        }
+        location ~ ^/(phpfpm_status|phpfpm_ping)$ {
+                allow 10.10.0.0/22;
+                allow 10.21.0.0/22;
+                allow 192.168.0.0/24;
+                allow 192.168.1.0/24;
+                allow 127.0.0.1;
+                deny all;
+                fastcgi_pass   127.0.0.1:9000;
+                fastcgi_index  index.php;
+                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+                include /etc/nginx/fastcgi_params;
+        }
+        location = /_.gif {
+                empty_gif;
+        }
+        location /api {
+            root  /www/web/api-yun-115-com/api.yun.115.com;
+            if (!-e $request_filename) {
+                rewrite ^/(.*)$ /index.php?$1 last;
+            }
+        }
+        location ~ ^/api/3.0/(.*){
+            root  /www/web/api-yun-115-com/api.yun.115.com;
+            set $ec_115 "on";
+            set $new_request_uri /api/1.0/$1?$query_string;
+            if (!-e $request_filename) {
+                rewrite ^/(.*)$ /index.php?$1 last;
+            }
+        }
+        location ~ ^/[0-9]+ {
+            root  /www/web/api-yun-115-com/api.yun.115.com;
+            if (!-e $request_filename) {
+                rewrite ^/(.*)$ /index.php?$1 last;
+            }
+        }
+        location /assets {
+            alias /www/web/api-yun-115-com/api.yun.115.com/assets_rc;
+            if (!-e $request_filename) {
+                rewrite ^/(.*)$ /index.php?$1 last;
+            }
+        }
+        location = /rpcapi {
+            root  /www/web/api-yun-115-com/api.yun.115.com/rpc/;
+        }
+        location = /msg {
+            root  /www/web/msg.yun.115.com/msg.yun.115.com;
+        }
+        location  / {
+            index  index.html index.htm index.php;
+        }
+}

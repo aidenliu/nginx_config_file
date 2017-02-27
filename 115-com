@@ -1,0 +1,89 @@
+server {
+	listen 80;
+	#listen [::]:80 default_server ipv6only=on;
+
+	root /www/web/site-115-com/115.com;
+	index index.html index.htm index.php;
+
+	# Make site accessible from http://localhost/
+	server_name 115rc.com;
+
+    rewrite ^/union/([0-9]+)$ "/union/index.php?u=$1" break;
+    rewrite ^/u/([0-9]+)$  "/?ac=goto_dir&index_tab=user&uid=$1" break;
+    rewrite ^/([0-9]+)$ "/zone/index.php" last;
+    rewrite ^/([0-9]+)/([0-9]+)$    "/zone/index.php?ct=feed&ac=detail&feed_id=$2" last;
+    rewrite ^/([0-9]+)/wo/([0-9]+)$ "/zone/wo/index.php?ct=article&art_id=$2" last;
+    rewrite ^/([0-9]+)/(wo|photo|note|fav|friend|word|info|aq|jianli)$ "/zone/$2/index.php" last;
+    rewrite ^/([0-9]+)/static/(.*)$ "/zone/static/$2" last;
+    rewrite ^/feed/topic/(.*)$ "/zone/feed/?topic=$1" last;
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+		try_files $uri $uri/ =404;
+		# Uncomment to enable naxsi on this location
+		# include /etc/nginx/naxsi.rules
+	}
+
+	# Only for nginx-naxsi used with nginx-naxsi-ui : process denied requests
+	#location /RequestDenied {
+	#	proxy_pass http://127.0.0.1:8080;
+	#}
+
+	#error_page 404 /404.html;
+
+	# redirect server error pages to the static page /50x.html
+	#
+	#error_page 500 502 503 504 /50x.html;
+	#location = /50x.html {
+	#	root /usr/share/nginx/html;
+	#}
+
+	# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+	#
+	location ~ \.php$ {
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		# NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+	#
+	#	# With php5-cgi alone:
+		#fastcgi_pass 127.0.0.1:9000;
+	#	# With php5-fpm:
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_pass unix:/var/run/php/php5.6-fpm.sock;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+
+	# deny access to .htaccess files, if Apache's document root
+	# concurs with nginx's one
+	#
+	#location ~ /\.ht {
+	#	deny all;
+	#}
+
+    location /lixian {
+        proxy_pass http://192.168.1.99:8088;
+        proxy_set_header   Host             $host;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+    }
+
+    location /zone/  {
+        proxy_pass "http://zone.115rc.com/";
+        proxy_set_header Host "zone.115rc.com";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Host $host;
+    }
+
+        location /static {
+                alias /www/web/site-115-com/115.com/static_rc;
+        }
+
+    rewrite "/file/f4dbb3045f"  "/deny" break;
+    rewrite "/file/e7c3laj4"   "/deny"  break;
+    rewrite "^/file(/)?(.*)$"  "/index.php?ctl=pickcode&pickcode=$2"    break;
+    rewrite "^/folder(/)?([a-zA-Z0-9]+)?(/)?(.*)?$"  "/index.php?ctl=pickcode&ac=folder&pick_code=$2&s=$4"    break;
+    rewrite ^/invite/(.*)$ "http://passport.115rc.com/?ac=register&invite=$1"  redirect;
+    rewrite ^/lb/(.*)$ "/lb/index.php?gift_code=$1" last;
+}
