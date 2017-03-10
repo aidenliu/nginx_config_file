@@ -2,7 +2,7 @@ server {
 	listen 80;
 	#listen [::]:80 default_server ipv6only=on;
 
-	root /www/web/web-api-115-com/app;
+	root /www/web/web-api-115-com/app;			
 	index index.html index.htm index.php;
 
 	# Make site accessible from http://localhost/

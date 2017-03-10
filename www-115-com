@@ -2,7 +2,7 @@ server {
 	listen 80;
 	#listen [::]:80 default_server ipv6only=on;
 
-	root /www/web/site-115-com/www.115.com;
+	root /www/web/site-115-com/www.115.com;	
 	index index.html index.htm index.php;
 
 	# Make site accessible from http://localhost/
@@ -22,7 +22,7 @@ server {
 	}
 
      location /static {
-        alias /www/web/site-115-com/www.115.com/static_rc;
+        alias /www/web/readonly.site.115.com/www.115.com/static_rc;
      }
 
 	# Only for nginx-naxsi used with nginx-naxsi-ui : process denied requests
